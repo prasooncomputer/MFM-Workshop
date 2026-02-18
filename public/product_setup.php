@@ -30,18 +30,18 @@
 <script>
 const api='<?= $apiBase ?>';
 async function list(){
- const products=await (await fetch(api+'/api/products')).json();
- const processes=await (await fetch(api+'/api/processes')).json();
+ const products=await (await fetch(`${api}?action=products`)).json();
+ const processes=await (await fetch(`${api}?action=processes`)).json();
  const pOpt=products.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
  const prOpt=processes.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
  ['r_product','b_product'].forEach(id=>document.getElementById(id).innerHTML=pOpt);
  document.getElementById('r_process').innerHTML=prOpt;
  document.getElementById('dep').innerHTML=`<option value=''>None</option>`+prOpt;
 }
-async function post(url,body){await fetch(api+url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});list();}
-function addProduct(){post('/api/products',{name:p_name.value,sku:p_sku.value});}
-function addProcess(){post('/api/processes',{name:pr_name.value,standard_time_minutes:+stm.value,standard_output_rate:+sor.value,can_parallel:cp.checked});}
-function addRouting(){post('/api/product-process',{product_id:+r_product.value,process_id:+r_process.value,sequence_no:+seq.value,depends_on_process_id:dep.value?+dep.value:null});}
-function addBOM(){post('/api/bom',{product_id:+b_product.value,material_name:material.value,qty_per_unit:+qty.value,unit:unit.value});}
+async function post(action,body){await fetch(`${api}?action=${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});list();}
+function addProduct(){post('products',{name:p_name.value,sku:p_sku.value});}
+function addProcess(){post('processes',{name:pr_name.value,standard_time_minutes:+stm.value,standard_output_rate:+sor.value,can_parallel:cp.checked});}
+function addRouting(){post('product_process',{product_id:+r_product.value,process_id:+r_process.value,sequence_no:+seq.value,depends_on_process_id:dep.value?+dep.value:null});}
+function addBOM(){post('bom',{product_id:+b_product.value,material_name:material.value,qty_per_unit:+qty.value,unit:unit.value});}
 list();
 </script></body></html>

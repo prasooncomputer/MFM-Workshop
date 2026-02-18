@@ -13,8 +13,8 @@
 <script>
 const api='<?= $apiBase ?>';
 async function load(){
-  const data=await (await fetch(api+'/api/dashboard/summary')).json();
-  document.getElementById('summary').innerHTML=`<p>Today's Tasks: ${data.today.today_tasks}</p><p>Blocked: ${data.today.blocked}</p><p>Risk: ${data.today.risk}</p><p>Expected Dispatch: ${data.expected_dispatch||'N/A'}</p>`;
+  const data=await (await fetch(`${api}?action=dashboard_summary`)).json();
+  document.getElementById('summary').innerHTML=`<p>Today's Tasks: ${data.today.today_tasks||0}</p><p>Blocked: ${data.today.blocked||0}</p><p>Risk: ${data.today.risk||0}</p><p>Expected Dispatch: ${data.expected_dispatch||'N/A'}</p>`;
   document.getElementById('worker').innerHTML=(data.worker_productivity||[]).map(w=>`<p>${w.employee_name}: ${w.productivity||0} units/hr</p>`).join('')||'No logs yet';
 }
 load();

@@ -11,16 +11,16 @@
 </div>
 <script>
 const api='<?= $apiBase ?>';
-async function loadProducts(){const ps=await (await fetch(api+'/api/products')).json();product.innerHTML=ps.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');}
+async function loadProducts(){const ps=await (await fetch(`${api}?action=products`)).json();product.innerHTML=ps.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');}
 async function preview(){
  const body={product_id:+product.value,quantity:+qty.value,start_date:new Date(start.value).toISOString(),priority:priority.value};
- const data=await (await fetch(api+'/api/planning/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+ const data=await (await fetch(`${api}?action=planning_preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
  materials.innerHTML=data.materials.map(m=>`<p>${m.material_name}: ${m.required_qty} ${m.unit}</p>`).join('');
  timeline.innerHTML=data.timeline.map(t=>`<tr><td>${t.process_name}</td><td>${t.planned_start}</td><td>${t.planned_end}</td><td>${t.duration_min}</td></tr>`).join('');
 }
 async function releaseOrder(){
  const body={product_id:+product.value,quantity:+qty.value,start_date:new Date(start.value).toISOString().slice(0,19).replace('T',' '),priority:priority.value};
- const r=await fetch(api+'/api/orders/release',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const r=await fetch(`${api}?action=orders_release`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  alert(r.ok?'Order released':'Failed to release');
 }
 loadProducts();

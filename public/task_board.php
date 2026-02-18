@@ -7,7 +7,7 @@
 const api='<?= $apiBase ?>';
 function badge(s){const t=(s==='in_progress'||s==='ready'||s==='pending')?'on_time':s;return `<span class='badge ${t}'>${s}</span>`;}
 async function load(){
- const data=await (await fetch(api+'/api/tasks/today')).json();
+ const data=await (await fetch(`${api}?action=tasks_today`)).json();
  rows.innerHTML=data.map(t=>`<tr><td>${t.process_name}</td><td>${t.target_quantity}</td><td>${t.completed_quantity}</td><td>${t.expected_progress}</td><td>${badge(t.status)}</td><td>${t.depends_on_task_id? 'Waiting predecessor':''}</td></tr>`).join('');
 }
 load(); setInterval(load,30000);

@@ -8,10 +8,10 @@
 <button onclick="save()">Apply Override</button></div></div>
 <script>
 const api='<?= $apiBase ?>';
-async function load(){const data=await (await fetch(api+'/api/tasks/today')).json();task.innerHTML=data.map(t=>`<option value='${t.id}'>#${t.id} ${t.process_name}</option>`).join('');}
+async function load(){const data=await (await fetch(`${api}?action=tasks_today`)).json();task.innerHTML=data.map(t=>`<option value='${t.id}'>#${t.id} ${t.process_name}</option>`).join('');}
 async function save(){
  const body={workers_assigned:workers.value?+workers.value:null,force_start:force_start.value?new Date(force_start.value).toISOString().slice(0,19).replace('T',' '):null,force_deadline:force_deadline.value?new Date(force_deadline.value).toISOString().slice(0,19).replace('T',' '):null,pause_flag:pause.checked?1:0,manual_lock:lock.checked?1:0,priority_override:priority.value||null};
- const r=await fetch(api+'/api/tasks/'+task.value+'/override',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const r=await fetch(`${api}?action=override&task_id=${task.value}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  alert(r.ok?'Override saved':'Failed');
 }
 load();
