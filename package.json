@@ -1,0 +1,18 @@
+{
+  "name": "mfm-workshop",
+  "version": "1.0.0",
+  "description": "Workshop Production Planning & Management System (PHP + Node.js + MySQL)",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "node --watch api/server.js",
+    "lint": "node -e \"console.log('No lint configured')\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.11.3"
+  }
+}
