@@ -4,44 +4,48 @@
 <div class="container">
 <div class="card">
 <h2>Screen 1 — Product Setup</h2>
+<p>Create a product first, then define its BOM and process attributes in one save action.</p>
 <div class="grid grid-2">
-<div>
-<h4>Add Product</h4>
-<input id="p_name" placeholder="Product Name"><input id="p_sku" placeholder="SKU"><button onclick="addProduct()">Save Product</button>
+  <input id="p_name" placeholder="Product Name">
+  <input id="p_sku" placeholder="SKU (optional)">
 </div>
-<div>
-<h4>Add Process</h4>
-<input id="pr_name" placeholder="Process Name"><input id="stm" type="number" placeholder="Std Time (min)"><input id="sor" type="number" placeholder="Output Rate"><label><input id="cp" type="checkbox"> Parallel Allowed</label><button onclick="addProcess()">Save Process</button>
+<h4>BOM Attributes</h4>
+<table><thead><tr><th>Material</th><th>Qty/Unit</th><th>Unit</th><th></th></tr></thead><tbody id="bom_rows"></tbody></table>
+<button onclick="addBomRow()" type="button">+ Add BOM Row</button>
+
+<h4>Process Attributes</h4>
+<table><thead><tr><th>Process</th><th>Seq</th><th>Depends on Seq</th><th>Std Time (min)</th><th>Output Rate</th><th>Parallel</th><th></th></tr></thead><tbody id="proc_rows"></tbody></table>
+<button onclick="addProcRow()" type="button">+ Add Process Row</button>
+
+<div style="margin-top:10px"><button onclick="saveProductSetup()">Save Product with BOM + Processes</button></div>
 </div>
-</div>
-</div>
+
 <div class="card">
-<h4>Routing & BOM</h4>
-<div class="grid grid-2">
-<div>
-<select id="r_product"></select><select id="r_process"></select><input id="seq" type="number" placeholder="Sequence"><select id="dep"></select><button onclick="addRouting()">Link Routing</button>
-</div>
-<div>
-<select id="b_product"></select><input id="material" placeholder="Material"><input id="qty" type="number" placeholder="Qty per unit"><input id="unit" placeholder="Unit"><button onclick="addBOM()">Add BOM</button>
-</div>
-</div>
+<h4>Existing Products</h4>
+<ul id="products"></ul>
 </div>
 </div>
 <script>
 const api='<?= $apiBase ?>';
-async function list(){
- const products=await (await fetch(`${api}?action=products`)).json();
- const processes=await (await fetch(`${api}?action=processes`)).json();
- const pOpt=products.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
- const prOpt=processes.map(p=>`<option value='${p.id}'>${p.name}</option>`).join('');
- ['r_product','b_product'].forEach(id=>document.getElementById(id).innerHTML=pOpt);
- document.getElementById('r_process').innerHTML=prOpt;
- document.getElementById('dep').innerHTML=`<option value=''>None</option>`+prOpt;
+function bomRow(){return `<tr><td><input class='mat' placeholder='Material'></td><td><input class='qty' type='number' step='0.01' value='0'></td><td><input class='unit' value='pcs'></td><td><button onclick='this.closest("tr").remove()' type='button'>x</button></td></tr>`;}
+function procRow(){return `<tr><td><input class='pname' placeholder='Process'></td><td><input class='seq' type='number' value='1'></td><td><input class='depseq' type='number' placeholder='optional'></td><td><input class='stm' type='number' step='0.01' value='1'></td><td><input class='sor' type='number' step='0.01' value='1'></td><td><input class='par' type='checkbox'></td><td><button onclick='this.closest("tr").remove()' type='button'>x</button></td></tr>`;}
+function addBomRow(){bom_rows.insertAdjacentHTML('beforeend', bomRow());}
+function addProcRow(){proc_rows.insertAdjacentHTML('beforeend', procRow());}
+function gather(){
+  const bom=[...document.querySelectorAll('#bom_rows tr')].map(r=>({material_name:r.querySelector('.mat').value,qty_per_unit:+r.querySelector('.qty').value,unit:r.querySelector('.unit').value})).filter(x=>x.material_name);
+  const processes=[...document.querySelectorAll('#proc_rows tr')].map(r=>({process_name:r.querySelector('.pname').value,sequence_no:+r.querySelector('.seq').value,depends_on_sequence_no:r.querySelector('.depseq').value?+r.querySelector('.depseq').value:null,standard_time_minutes:+r.querySelector('.stm').value,standard_output_rate:+r.querySelector('.sor').value,can_parallel:r.querySelector('.par').checked})).filter(x=>x.process_name);
+  return {name:p_name.value,sku:p_sku.value,bom,processes};
 }
-async function post(action,body){await fetch(`${api}?action=${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});list();}
-function addProduct(){post('products',{name:p_name.value,sku:p_sku.value});}
-function addProcess(){post('processes',{name:pr_name.value,standard_time_minutes:+stm.value,standard_output_rate:+sor.value,can_parallel:cp.checked});}
-function addRouting(){post('product_process',{product_id:+r_product.value,process_id:+r_process.value,sequence_no:+seq.value,depends_on_process_id:dep.value?+dep.value:null});}
-function addBOM(){post('bom',{product_id:+b_product.value,material_name:material.value,qty_per_unit:+qty.value,unit:unit.value});}
-list();
+async function saveProductSetup(){
+  const body=gather();
+  const r=await fetch(`${api}?action=product_setup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const data=await r.json();
+  alert(r.ok?`Saved product #${data.id}`:(data.error||'Failed'));
+  if(r.ok){p_name.value='';p_sku.value='';bom_rows.innerHTML='';proc_rows.innerHTML='';addBomRow();addProcRow();loadProducts();}
+}
+async function loadProducts(){
+  const r=await fetch(`${api}?action=products`); const data=await r.json();
+  products.innerHTML=(data||[]).map(p=>`<li>#${p.id} ${p.name} (${p.sku||'no sku'})</li>`).join('') || '<li>No products yet</li>';
+}
+addBomRow();addProcRow();loadProducts();
 </script></body></html>
